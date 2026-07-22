@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lactancia">
+<meta name="theme-color" content="#faf9f7">
+<title>Lactancia</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;color:#222;background:#faf9f7}
+*{box-sizing:border-box}body{margin:0;background:#faf9f7}
+main{max-width:560px;margin:auto;padding:24px 18px 40px}
+h1{text-align:center;font-size:30px;margin:10px 0 6px}.sub{text-align:center;color:#777;margin-bottom:22px}
+.card{background:#fff;border-radius:22px;padding:20px;box-shadow:0 4px 18px #0000000d;margin-bottom:16px}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{border:0;border-radius:18px;padding:18px 10px;font-size:18px;font-weight:700;background:#eee;cursor:pointer}
+button:active{transform:scale(.98)}
+.left{background:#f3e6dc}.right{background:#e1edf3}.active{outline:3px solid #222}
+.timer{text-align:center;font-size:44px;font-variant-numeric:tabular-nums;margin:18px 0 6px}
+.status{text-align:center;color:#666;min-height:24px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.primary{background:#222;color:#fff}.danger{background:#eee;color:#b00020}
+.last{margin-top:18px;padding-top:16px;border-top:1px solid #eee}
+.last h3{margin:0 0 8px;font-size:18px}.last-main{font-size:17px;line-height:1.55}
+.next{margin-top:8px;font-weight:700}.muted{color:#777}
+h2{font-size:20px;margin:4px 0 14px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #eee}
+.row:last-child{border-bottom:0}.empty{text-align:center;color:#888;padding:15px 0}
+.small{font-size:13px;color:#777;text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<h1>🍼 Lactancia</h1>
+<div class="sub">Registra las tomas de forma sencilla</div>
+
+<section class="card">
+  <div class="buttons">
+    <button id="leftBtn" class="left" onclick="startOrSwitch('Izquierdo')">IZQUIERDO</button>
+    <button id="rightBtn" class="right" onclick="startOrSwitch('Derecho')">DERECHO</button>
+  </div>
+  <div id="timer" class="timer">00:00:00</div>
+  <div id="status" class="status">Elige un pecho para empezar</div>
+  <div class="controls">
+    <button id="pauseBtn" onclick="togglePause()" disabled>⏸️ Pausar</button>
+    <button class="danger" onclick="finish()">✓ Terminar</button>
+  </div>
+
+  <div id="last" class="last"></div>
+</section>
+
+<section class="card">
+<h2>📋 Tomas de hoy</h2>
+<div id="history"></div>
+</section>
+
+<div class="small">Los datos se guardan en este dispositivo.</div>
+</main>
+
+<script>
+const KEY='lactancia_tomas_v2';
+let state={active:false,paused:false,side:null,start:null,elapsed:0,lastTick:null,segments:[]};
+let history=JSON.parse(localStorage.getItem(KEY)||'[]');
+
+function fmt(sec){
+ sec=Math.max(0,Math.round(sec)); const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+ return [h,m,s].map(x=>String(x).padStart(2,'0')).join(':');
+}
+function fmtShort(sec){
+ sec=Math.max(0,Math.round(sec)); const m=Math.floor(sec/60),s=sec%60;
+ if(m===0)return `${s} s`;
+ if(s===0)return `${m} min`;
+ return `${m} min ${s} s`;
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(history));}
+function today(){return new Date().toISOString().slice(0,10)}
+function startOrSwitch(side){
+ if(!state.active){
+   const now=Date.now();
+   state={active:true,paused:false,side,start:now,elapsed:0,lastTick:now,segments:[{side,start:now,elapsed:0}]};
+ } else if(state.side!==side){
+   tick();
+   state.side=side; state.paused=false;
+   state.segments.push({side,start:Date.now(),elapsed:0});
+ }
+ render();
+}
+function tick(){
+ if(!state.active||state.paused)return;
+ const now=Date.now(),d=(now-state.lastTick)/1000;
+ state.elapsed+=d;
+ const seg=state.segments[state.segments.length-1];
+ if(seg)seg.elapsed+=d;
+ state.lastTick=now;
+}
+function togglePause(){
+ if(!state.active)return;
+ if(state.paused){state.paused=false;state.lastTick=Date.now();}
+ else{tick();state.paused=true;}
+ render();
+}
+function finish(){
+ if(!state.active)return;
+ tick();
+ const sides={};
+ state.segments.forEach(s=>sides[s.side]=(sides[s.side]||0)+s.elapsed);
+ const roundedSides={};
+ Object.entries(sides).forEach(([k,v])=>roundedSides[k]=Math.round(v));
+ const item={
+   date:today(),
+   timestamp:state.start,
+   time:new Date(state.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
+   total:Math.round(state.elapsed),
+   sides:roundedSides,
+   lastSide:state.side
+ };
+ history.unshift(item); save();
+ state={active:false,paused:false,side:null,start:null,elapsed:0,lastTick:null,segments:[]};
+ render();
+}
+function lastSummary(){
+ const last=history[0];
+ if(!last)return '<h3>Última toma</h3><div class="muted">Todavía no hay tomas registradas.</div>';
+ const parts=Object.entries(last.sides).map(([s,v])=>`🤱 ${s}: ${fmtShort(v)}`).join(' · ');
+ const next=last.lastSide==='Izquierdo'?'Derecho':'Izquierdo';
+ return `<h3>Última toma</h3>
+ <div class="last-main">🕐 <b>${last.time}</b> · ${parts}<br>⏱️ <b>${fmtShort(last.total)} total</b></div>
+ <div class="next">Siguiente pecho: ${next}</div>`;
+}
+function render(){
+ tick();
+ document.getElementById('timer').textContent=fmt(state.elapsed);
+ document.getElementById('status').textContent=state.active
+  ? `${state.side} · ${state.paused?'En pausa':'En curso'}`
+  : 'Elige un pecho para empezar';
+ document.getElementById('pauseBtn').disabled=!state.active;
+ document.getElementById('pauseBtn').textContent=state.paused?'▶️ Reanudar':'⏸️ Pausar';
+ document.getElementById('leftBtn').classList.toggle('active',state.active&&state.side==='Izquierdo');
+ document.getElementById('rightBtn').classList.toggle('active',state.active&&state.side==='Derecho');
+ document.getElementById('last').innerHTML=lastSummary();
+
+ const h=history.filter(x=>x.date===today());
+ document.getElementById('history').innerHTML=h.length?h.map(x=>{
+   const detail=Object.entries(x.sides).map(([s,v])=>`${s}: ${fmtShort(v)}`).join(' · ');
+   const next=x.lastSide==='Izquierdo'?'Derecho':'Izquierdo';
+   return `<div class="row"><div><b>${x.time}</b><br><span class="muted">${detail}</span><br><span class="muted">Siguiente: ${next}</span></div><b>${fmtShort(x.total)}</b></div>`;
+ }).join(''):'<div class="empty">Todavía no hay tomas registradas hoy.</div>';
+}
+setInterval(render,1000); render();
+</script>
+</body>
+</html>
