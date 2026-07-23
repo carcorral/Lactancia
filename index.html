@@ -8,6 +8,7 @@
 <title>Lactancia</title>
 
 <style>
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     background: #faf9f7;
@@ -108,24 +109,48 @@ button {
     line-height: 1.7;
 }
 
-.summary {
-    display: flex;
-    gap: 10px;
+
+/* ESTADÍSTICAS */
+
+.stats-title {
+    margin-top: 0;
+    margin-bottom: 14px;
 }
 
-.summary-box {
-    flex: 1;
-    background: #f5f4f2;
-    border-radius: 15px;
-    text-align: center;
-    padding: 15px;
+.stats-row {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 1.3fr;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    gap: 8px;
 }
 
-.summary-number {
-    display: block;
-    font-size: 22px;
-    font-weight: bold;
+.stats-row:last-child {
+    border-bottom: none;
 }
+
+.stats-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #777;
+}
+
+.stats-value {
+    font-size: 17px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.stats-header {
+    font-size: 11px;
+    color: #999;
+    text-align: right;
+    margin-bottom: 3px;
+}
+
+
+/* HISTORIAL */
 
 .add-button {
     width: 100%;
@@ -171,6 +196,9 @@ button {
     color: #888;
     padding: 15px;
 }
+
+
+/* MODAL */
 
 .modal {
     display: none;
@@ -220,8 +248,10 @@ select {
 .modal-buttons button {
     flex: 1;
 }
+
 </style>
 </head>
+
 
 <body>
 
@@ -233,6 +263,8 @@ select {
 Registra las tomas de tu bebé
 </div>
 
+
+<!-- PRIMERA TARJETA: SE MANTIENE IGUAL -->
 
 <div class="card">
 
@@ -246,6 +278,7 @@ onclick="selectSide('Izquierdo')">
 🤱 Izquierdo
 
 </button>
+
 
 <button
 id="rightButton"
@@ -310,38 +343,87 @@ class="last">
 </div>
 
 
+<!-- NUEVAS ESTADÍSTICAS -->
+
 <div class="card">
 
-<h2>📊 Resumen de hoy</h2>
+<h2 class="stats-title">
+📊 Estadísticas
+</h2>
 
-<div class="summary">
 
-<div class="summary-box">
+<div class="stats-row">
 
-<span
-id="feedCount"
-class="summary-number">
+<div class="stats-label">
+HOY
+</div>
+
+<div>
+<div class="stats-header">
+🍼 TOMAS
+</div>
+
+<div
+id="todayCount"
+class="stats-value">
 
 0
 
-</span>
-
-tomas
+</div>
 
 </div>
 
 
-<div class="summary-box">
+<div>
+<div class="stats-header">
+⏱️ TIEMPO
+</div>
 
-<span
-id="totalTime"
-class="summary-number">
+<div
+id="todayTime"
+class="stats-value">
 
 0 min
 
-</span>
+</div>
 
-tiempo total
+</div>
+
+</div>
+
+
+<div class="stats-row">
+
+<div class="stats-label">
+MEDIA · 7 DÍAS
+</div>
+
+<div>
+<div class="stats-header">
+🍼 / DÍA
+</div>
+
+<div
+id="sevenCount"
+class="stats-value">
+
+0
+
+</div>
+
+</div>
+
+
+<div>
+<div class="stats-header">
+⏱️ / DÍA
+</div>
+
+<div
+id="sevenTime"
+class="stats-value">
+
+0 min
 
 </div>
 
@@ -349,10 +431,57 @@ tiempo total
 
 </div>
 
+
+<div class="stats-row">
+
+<div class="stats-label">
+MEDIA · TOTAL
+</div>
+
+<div>
+<div class="stats-header">
+🍼 / DÍA
+</div>
+
+<div
+id="allCount"
+class="stats-value">
+
+0
+
+</div>
+
+</div>
+
+
+<div>
+<div class="stats-header">
+⏱️ / DÍA
+</div>
+
+<div
+id="allTime"
+class="stats-value">
+
+0 min
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- HISTORIAL -->
 
 <div class="card">
 
-<h2>📋 Tomas de hoy</h2>
+<h2>
+📋 Tomas de hoy
+</h2>
+
 
 <button
 class="add-button"
@@ -373,6 +502,8 @@ id="feedHistory">
 </main>
 
 
+<!-- MODAL -->
+
 <div
 id="modal"
 class="modal">
@@ -388,9 +519,7 @@ Añadir toma
 
 
 <label>
-
 Hora de inicio
-
 </label>
 
 <input
@@ -399,9 +528,7 @@ type="time">
 
 
 <label>
-
 Pecho
-
 </label>
 
 <select
@@ -419,9 +546,7 @@ Derecho
 
 
 <label>
-
 Duración en minutos
-
 </label>
 
 <input
@@ -515,28 +640,37 @@ return new Date()
 
 function formatDuration(seconds) {
 
-let minutes =
-Math.floor(seconds / 60);
+seconds =
+Math.round(seconds);
 
-let remaining =
-Math.floor(seconds % 60);
+
+let hours =
+Math.floor(seconds / 3600);
+
+
+let minutes =
+Math.floor(
+(seconds % 3600) / 60
+);
+
+
+if (hours > 0) {
 
 if (minutes === 0) {
 
-return remaining + " s";
+return hours + " h";
 
 }
 
-if (remaining === 0) {
+return hours +
+" h " +
+String(minutes).padStart(2,"0") +
+" min";
+
+}
+
 
 return minutes + " min";
-
-}
-
-return minutes +
-" min " +
-remaining +
-" s";
 
 }
 
@@ -560,16 +694,22 @@ now;
 
 }
 
+
 let totalSeconds =
 Math.floor(timer.elapsed);
 
+
 let hours =
-Math.floor(totalSeconds / 3600);
+Math.floor(
+totalSeconds / 3600
+);
+
 
 let minutes =
 Math.floor(
 (totalSeconds % 3600) / 60
 );
+
 
 let seconds =
 totalSeconds % 60;
@@ -893,8 +1033,11 @@ feed.side;
 document.getElementById(
 "feedMinutes"
 ).value =
+Math.max(
+1,
 Math.round(
 feed.duration / 60
+)
 );
 
 
@@ -1038,18 +1181,21 @@ render();
 
 
 
-function render() {
+/* ESTADÍSTICAS */
 
-updateTimer();
+function calculateStatistics() {
+
+let todayDate =
+today();
 
 
 let todayFeeds =
 feeds.filter(
-x => x.date === today()
+x => x.date === todayDate
 );
 
 
-let total =
+let todaySeconds =
 todayFeeds.reduce(
 (sum,x) =>
 sum + x.duration,
@@ -1057,16 +1203,201 @@ sum + x.duration,
 );
 
 
+/* Últimos 7 días incluyendo hoy */
+
+let last7Seconds = 0;
+
+let last7Feeds = 0;
+
+
+for (
+let i = 0;
+i < 7;
+i++
+) {
+
+let date =
+new Date();
+
+
+date.setDate(
+date.getDate() - i
+);
+
+
+let dateString =
+date.toISOString()
+.substring(0,10);
+
+
+let dayFeeds =
+feeds.filter(
+x => x.date === dateString
+);
+
+
+last7Feeds +=
+dayFeeds.length;
+
+
+last7Seconds +=
+dayFeeds.reduce(
+(sum,x) =>
+sum + x.duration,
+0
+);
+
+}
+
+
+/* Media absoluta */
+
+let firstDate = null;
+
+
+if (feeds.length > 0) {
+
+firstDate =
+feeds.reduce(
+(min,x) =>
+!min || x.date < min
+?
+x.date
+:
+min,
+null
+);
+
+}
+
+
+let absoluteDays = 0;
+
+let absoluteFeeds = 0;
+
+let absoluteSeconds = 0;
+
+
+if (firstDate) {
+
+let start =
+new Date(
+firstDate
+);
+
+
+let end =
+new Date(
+todayDate
+);
+
+
+absoluteDays =
+Math.floor(
+(end-start) /
+86400000
+) + 1;
+
+
+absoluteFeeds =
+feeds.length;
+
+
+absoluteSeconds =
+feeds.reduce(
+(sum,x) =>
+sum + x.duration,
+0
+);
+
+}
+
+
+let sevenFeedAverage =
+last7Feeds / 7;
+
+
+let sevenTimeAverage =
+last7Seconds / 7;
+
+
+let absoluteFeedAverage =
+absoluteDays > 0
+?
+absoluteFeeds /
+absoluteDays
+:
+0;
+
+
+let absoluteTimeAverage =
+absoluteDays > 0
+?
+absoluteSeconds /
+absoluteDays
+:
+0;
+
+
 document.getElementById(
-"feedCount"
+"todayCount"
 ).textContent =
 todayFeeds.length;
 
 
 document.getElementById(
-"totalTime"
+"todayTime"
 ).textContent =
-formatDuration(total);
+formatDuration(
+todaySeconds
+);
+
+
+document.getElementById(
+"sevenCount"
+).textContent =
+sevenFeedAverage
+.toFixed(1);
+
+
+document.getElementById(
+"sevenTime"
+).textContent =
+formatDuration(
+sevenTimeAverage
+);
+
+
+document.getElementById(
+"allCount"
+).textContent =
+absoluteFeedAverage
+.toFixed(1);
+
+
+document.getElementById(
+"allTime"
+).textContent =
+formatDuration(
+absoluteTimeAverage
+);
+
+}
+
+
+
+function render() {
+
+updateTimer();
+
+
+calculateStatistics();
+
+
+let todayFeeds =
+feeds.filter(
+x => x.date === today()
+);
 
 
 let last =
