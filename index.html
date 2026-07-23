@@ -1416,6 +1416,21 @@ last.side === "Izquierdo"
 :
 "Izquierdo";
 
+let lastDateTime =
+new Date(
+last.date +
+"T" +
+last.time
+);
+
+let elapsedSinceLast =
+Math.max(
+0,
+Math.floor(
+(Date.now() - lastDateTime.getTime()) /
+1000
+)
+);
 
 document.getElementById(
 "lastFeed"
@@ -1423,10 +1438,17 @@ document.getElementById(
 
 "<b>Última toma</b><br>" +
 
-"🕐 " +
+"🕐 Empezó a las " +
 last.time +
 
-" · 🤱 " +
+" · hace " +
+formatDuration(
+elapsedSinceLast
+) +
+
+"<br>" +
+
+"🤱 " +
 last.side +
 
 " · ⏱️ " +
@@ -1436,11 +1458,13 @@ last.duration
 
 "<br><b>" +
 
-"Siguiente pecho: " +
+"👉 Siguiente pecho: " +
 
 next +
 
 "</b>";
+
+
 
 }
 
