@@ -1,0 +1,10 @@
+{
+  "name": "Lactancia",
+  "short_name": "Lactancia",
+  "description": "Registro de las tomas de lactancia del bebé",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#faf9f7",
+  "orientation": "portrait"
+}
