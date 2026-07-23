@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lactancia">
 <title>Lactancia</title>
+    
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#faf9f7">
 
 <style>
 
@@ -1545,8 +1548,21 @@ render,
 
 
 render();
-
 </script>
 
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+            .then(() => {
+                console.log("Lactancia PWA activada");
+            })
+            .catch(error => {
+                console.error("Error al activar la PWA:", error);
+            });
+    });
+}
+</script>
+    
 </body>
 </html>
