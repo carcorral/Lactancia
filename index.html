@@ -1432,6 +1432,39 @@ Math.floor(
 )
 );
 
+let elapsedText;
+
+let elapsedMinutes =
+Math.floor(
+elapsedSinceLast / 60
+);
+
+let elapsedHours =
+Math.floor(
+elapsedMinutes / 60
+);
+
+let remainingMinutes =
+elapsedMinutes % 60;
+
+if (elapsedHours > 0) {
+
+elapsedText =
+""
++ elapsedHours
++ " h "
++ remainingMinutes
++ " min";
+
+} else {
+
+elapsedText =
+""
++ elapsedMinutes
++ " min";
+
+}
+
 document.getElementById(
 "lastFeed"
 ).innerHTML =
